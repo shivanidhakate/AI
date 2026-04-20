@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediAI — Bayesian Disease Risk Analyzer</title>
+  <meta name="description"
+    content="AI-powered disease risk predictor using a Bayesian Belief Network DAG with real-time inference." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- Particle canvas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="app-wrapper">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header>
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="19" stroke="url(#lg1)" stroke-width="2" />
+            <path d="M8 20h4l3-8 4 16 3-10 2 4h8" stroke="url(#lg1)" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#7c4dff" />
+                <stop offset="1" stop-color="#00bfa5" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>Medi<span class="accent">AI</span></h1>
+          <p>Bayesian Belief Network · Real-Time Disease Risk Analyzer</p>
+        </div>
+      </div>
+
+      <!-- EKG animation -->
+      <div class="ekg-wrap" aria-hidden="true">
+        <svg class="ekg-svg" viewBox="0 0 300 60" preserveAspectRatio="none">
+          <polyline class="ekg-line"
+            points="0,30 30,30 40,30 50,5 60,55 70,30 90,30 120,30 130,30 140,5 150,55 160,30 180,30 210,30 220,5 230,55 240,30 270,30 300,30" />
+        </svg>
+      </div>
+
+      <div class="header-right">
+        <div class="live-badge">
+          <span class="dot"></span> Live Inference
+        </div>
+        <div class="model-badge">Naive Bayes CPT</div>
+      </div>
+    </header>
+
+    <!-- ── Main ───────────────────────────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- ── LEFT: Patient Profile ──────────────────────────────────────── -->
+      <aside class="panel symptoms-panel">
+        <div class="panel-header">
+          <span class="panel-icon">🧬</span>
+          <h2>Patient Profile</h2>
+          <span class="count-badge" id="symptom-count-badge">0</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="symptom-group">
+            <div class="group-label">⚠ Risk Factors</div>
+            <label class="symptom-item" for="cb-smoker">
+              <input type="checkbox" class="symptom-cb" value="smoker" id="cb-smoker" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">🚬</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Smoker</span>
+                <span class="symptom-sub">High carcinogen exposure</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-pollution">
+              <input type="checkbox" class="symptom-cb" value="pollution" id="cb-pollution" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">🏭</span>
+              <div class="symptom-info">
+                <span class="symptom-label">High Pollution Area</span>
+                <span class="symptom-sub">Environmental toxins</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-obesity">
+              <input type="checkbox" class="symptom-cb" value="obesity" id="cb-obesity" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">⚖️</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Obesity</span>
+                <span class="symptom-sub">BMI &gt; 30</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-highBP">
+              <input type="checkbox" class="symptom-cb" value="highBP" id="cb-highBP" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">💉</span>
+              <div class="symptom-info">
+                <span class="symptom-label">High Blood Pressure</span>
+                <span class="symptom-sub">&gt; 140/90 mmHg</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="symptom-group">
+            <div class="group-label">🌡 Clinical Symptoms</div>
+            <label class="symptom-item" for="cb-fever">
+              <input type="checkbox" class="symptom-cb" value="fever" id="cb-fever" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">🌡️</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Fever</span>
+                <span class="symptom-sub">&gt; 38°C / 100.4°F</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-fatigue">
+              <input type="checkbox" class="symptom-cb" value="fatigue" id="cb-fatigue" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">😴</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Fatigue</span>
+                <span class="symptom-sub">Persistent weakness</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-cough">
+              <input type="checkbox" class="symptom-cb" value="cough" id="cb-cough" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">😷</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Persistent Cough</span>
+                <span class="symptom-sub">Lasting &gt; 2 weeks</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-dyspnea">
+              <input type="checkbox" class="symptom-cb" value="dyspnea" id="cb-dyspnea" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">💨</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Shortness of Breath</span>
+                <span class="symptom-sub">Dyspnea on exertion</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-chestPain">
+              <input type="checkbox" class="symptom-cb" value="chestPain" id="cb-chestPain" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">💔</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Chest Pain</span>
+                <span class="symptom-sub">Radiating or localized</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="symptom-group">
+            <div class="group-label">🔬 Specific Indicators</div>
+            <label class="symptom-item" for="cb-excessiveThirst">
+              <input type="checkbox" class="symptom-cb" value="excessiveThirst" id="cb-excessiveThirst" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">💧</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Excessive Thirst</span>
+                <span class="symptom-sub">Polydipsia</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-frequentUrination">
+              <input type="checkbox" class="symptom-cb" value="frequentUrination" id="cb-frequentUrination" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">🚻</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Frequent Urination</span>
+                <span class="symptom-sub">Polyuria</span>
+              </div>
+            </label>
+            <label class="symptom-item" for="cb-positiveXray">
+              <input type="checkbox" class="symptom-cb" value="positiveXray" id="cb-positiveXray" />
+              <span class="cb-track"><span class="cb-thumb"></span></span>
+              <span class="symptom-emoji">🩻</span>
+              <div class="symptom-info">
+                <span class="symptom-label">Positive X-Ray</span>
+                <span class="symptom-sub">Pulmonary opacity</span>
+              </div>
+            </label>
+          </div>
+
+          <button id="reset-btn">↺ Clear All Symptoms</button>
+        </div>
+      </aside>
+
+      <!-- ── CENTER ──────────────────────────────────────────────────────── -->
+      <div class="center-col">
+
+        <!-- Risk Gauge Row -->
+        <div class="gauge-row">
+          <div class="panel gauge-panel">
+            <div class="panel-header">
+              <span class="panel-icon">🎯</span>
+              <h2>Overall Risk Score</h2>
+            </div>
+            <div class="gauge-body">
+              <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 200 120">
+                  <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e2a4a"
+                    stroke-width="18" stroke-linecap="round" />
+                  <path class="gauge-fill" id="gauge-arc" d="M 20 100 A 80 80 0 0 1 180 100" fill="none"
+                    stroke="url(#gaugeLg)" stroke-width="18" stroke-linecap="round" stroke-dasharray="251"
+                    stroke-dashoffset="251" />
+                  <text x="100" y="98" text-anchor="middle" class="gauge-num" id="gauge-num">0</text>
+                  <text x="100" y="112" text-anchor="middle" class="gauge-lbl">RISK SCORE</text>
+                  <defs>
+                    <linearGradient id="gaugeLg" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#00bfa5" />
+                      <stop offset="50%" stop-color="#ffd93d" />
+                      <stop offset="100%" stop-color="#ff4444" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="gauge-status" id="gauge-status">No Risk Detected</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Radar Chart -->
+          <div class="panel radar-panel">
+            <div class="panel-header">
+              <span class="panel-icon">📡</span>
+              <h2>Disease Radar</h2>
+            </div>
+            <div class="radar-body">
+              <svg id="radar-svg" viewBox="0 0 260 240" class="radar-svg"></svg>
+              <div class="radar-legend">
+                <span class="rl-item"><span class="rl-dot" style="background:#ff6b6b"></span>Lung Cancer</span>
+                <span class="rl-item"><span class="rl-dot" style="background:#ffd93d"></span>Flu</span>
+                <span class="rl-item"><span class="rl-dot" style="background:#6bcbff"></span>Diabetes</span>
+                <span class="rl-item"><span class="rl-dot" style="background:#ff9ff3"></span>Heart</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAG Panel -->
+        <div class="panel dag-panel">
+          <div class="panel-header">
+            <span class="panel-icon">🔗</span>
+            <h2>Bayesian Network — Directed Acyclic Graph (DAG)</h2>
+            <span class="dag-hint">Active nodes glow</span>
+          </div>
+          <div class="dag-svg-wrap">
+            <svg id="dag-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+          <div class="dag-legend">
+            <div class="legend-item">
+              <div class="legend-dot risk"></div>Risk Factor
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot disease"></div>Disease
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot symptom"></div>Symptom/Test
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Diagnosis Box -->
+        <div class="panel ai-panel">
+          <div class="panel-header">
+            <span class="panel-icon">🤖</span>
+            <h2>AI Medical Analysis</h2>
+            <span class="ai-typing-dot" id="typing-dot"></span>
+          </div>
+          <div class="panel-body">
+            <p class="ai-text mono" id="ai-text">Awaiting patient data... Select symptoms from the left panel to begin
+              analysis.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: Results ─────────────────────────────────────────────── -->
+      <aside class="panel results-panel">
+        <div class="panel-header">
+          <span class="panel-icon">📊</span>
+          <h2>Probability Results</h2>
+        </div>
+        <div class="panel-body">
+
+          <!-- Lung Cancer -->
+          <div class="disease-card" data-disease="lungCancer">
+            <div class="dc-top">
+              <div class="dc-label">
+                <div class="dc-icon-wrap lung"><span>🫁</span></div>
+                <div>
+                  <div class="dc-name">Lung Cancer</div>
+                  <div class="dc-subname">Pulmonary Carcinoma</div>
+                </div>
+              </div>
+              <span class="risk-badge risk-low" id="badge-lung">LOW</span>
+            </div>
+            <div class="prob-bar-wrap">
+              <div class="prob-bar lung-bar" id="bar-lung"></div>
+            </div>
+            <div class="prob-footer">
+              <span class="prob-label">P(Cancer | Evidence)</span>
+              <span class="prob-val" id="val-lung">0%</span>
+            </div>
+            <div class="dc-expand" id="info-lung">
+              <p>Key risk factors: smoking, air pollution, asbestos. Symptoms include chronic cough, weight loss,
+                hemoptysis.</p>
+            </div>
+          </div>
+
+          <!-- Diabetes -->
+          <div class="disease-card" data-disease="diabetes">
+            <div class="dc-top">
+              <div class="dc-label">
+                <div class="dc-icon-wrap diabetes"><span>🩸</span></div>
+                <div>
+                  <div class="dc-name">Diabetes</div>
+                  <div class="dc-subname">Metabolic Disorder</div>
+                </div>
+              </div>
+              <span class="risk-badge risk-low" id="badge-diabetes">LOW</span>
+            </div>
+            <div class="prob-bar-wrap">
+              <div class="prob-bar diabetes-bar" id="bar-diabetes"></div>
+            </div>
+            <div class="prob-footer">
+              <span class="prob-label">P(DIABETES | Evidence)</span>
+              <span class="prob-val" id="val-diabetes">0%</span>
+            </div>
+            <div class="dc-expand" id="info-diabetes">
+              <p>Characterized by high blood sugar. Symptoms include excessive thirst, frequent urination, and fatigue. Strong link to obesity and hypertension.</p>
+            </div>
+          </div>
+
+          <!-- Heart Disease -->
+          <div class="disease-card" data-disease="heartDisease">
+            <div class="dc-top">
+              <div class="dc-label">
+                <div class="dc-icon-wrap heart"><span>❤️</span></div>
+                <div>
+                  <div class="dc-name">Heart Disease</div>
+                  <div class="dc-subname">Cardiovascular Disease</div>
+                </div>
+              </div>
+              <span class="risk-badge risk-low" id="badge-heart">LOW</span>
+            </div>
+            <div class="prob-bar-wrap">
+              <div class="prob-bar heart-bar" id="bar-heart"></div>
+            </div>
+            <div class="prob-footer">
+              <span class="prob-label">P(Heart | Evidence)</span>
+              <span class="prob-val" id="val-heart">0%</span>
+            </div>
+            <div class="dc-expand" id="info-heart">
+              <p>Elevated by hypertension, obesity, diabetes. Chest pain radiating to arm is a major indicator.</p>
+            </div>
+          </div>
+
+          <!-- Influenza -->
+          <div class="disease-card" data-disease="flu">
+            <div class="dc-top">
+              <div class="dc-label">
+                <div class="dc-icon-wrap flu"><span>🤧</span></div>
+                <div>
+                  <div class="dc-name">Influenza</div>
+                  <div class="dc-subname">Seasonal Flu Virus</div>
+                </div>
+              </div>
+              <span class="risk-badge risk-low" id="badge-flu">LOW</span>
+            </div>
+            <div class="prob-bar-wrap">
+              <div class="prob-bar flu-bar" id="bar-flu"></div>
+            </div>
+            <div class="prob-footer">
+              <span class="prob-label">P(Flu | Evidence)</span>
+              <span class="prob-val" id="val-flu">0%</span>
+            </div>
+            <div class="dc-expand" id="info-flu">
+              <p>Hallmarks: sudden onset high fever, body aches, fatigue. Peak season Oct–Mar in northern hemisphere.
+              </p>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            ⚠️ <strong>Educational Use Only.</strong> Not a substitute for professional medical advice.
+          </div>
+        </div>
+      </aside>
+
+    </main>
+
+    <footer>
+      Shivani Dhakate &nbsp;·&nbsp; MediAI Disease Predictor &nbsp;·&nbsp; Bayesian Belief Network &nbsp;·&nbsp;
+      HTML · CSS · JavaScript
+    </footer>
+  </div>
+
+  <script src="bayesian.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
